@@ -13,11 +13,16 @@ module Simplicity
     
     def smart_fields_for(record_or_name_or_array, *args, &proc)
       options = args.extract_options!
-      fields_for(record_or_name_or_array, *(args << options.merge(:builder => Simp;eFormBuilder)), &proc)
+      fields_for(record_or_name_or_array, *(args << options.merge(:builder => SimpleFormBuilder)), &proc)
     end    
   end
 
-  class SmartFormBuilder < ActionView::Helpers::FormBuilder
+  class SimpleFormBuilder < ActionView::Helpers::FormBuilder
+
+    def initialize(*args)
+      @tab_index = 0
+      super
+    end
 
     def date_select(method, options={})
       labelled_field(method, options, super)
@@ -44,7 +49,7 @@ module Simplicity
     end
 
     def radio_button(method, tag_value, options={})
-      @template.content_tag :li, super + radio_label(method, tag_value, options)
+      field_group(super + radio_label(method, tag_value, options))
     end
 
     def select(method, choices, options={}, html_options={})
@@ -68,46 +73,60 @@ module Simplicity
     end
 
     def fieldset(legend=nil, &block)
-      @template.concat @template.tag(:fieldset, :class => "set", true),     block.binding
-      @template.concat @template.content_tag(:h3, legend),                  block.binding unless legend.nil?
-      @template.concat @template.tag(:ol, nil, true),                       block.binding
+      @template.concat @template.tag(:fieldset, {:class => "set"}, true)
+      @template.concat @template.content_tag(:h3, legend) unless legend.nil?
+      @template.concat @template.tag(:ol, nil, true)
 
       yield
 
-      @template.concat "</ol></fieldset>", block.binding
+      @template.concat "</ol></fieldset>"
     end
 
     def inner_fieldset(legend=nil, &block)
-      @template.concat @template.tag(:li, nil, true),                 block.binding
-      @template.concat @template.tag(:fieldset, nil, true),           block.binding
-      @template.concat @template.content_tag(:h3, "#{legend}:"),      block.binding unless legend.nil?
-      @template.concat @template.tag(:ol, nil, true),                 block.binding
+      @template.concat @template.tag(:li, nil, true)
+      @template.concat @template.tag(:fieldset, nil, true)
+      @template.concat @template.content_tag(:h3, "#{legend}:") unless legend.nil?
+      @template.concat @template.tag(:ol, nil, true)
 
       yield
 
-      @template.concat "</ol></fieldset></li>", block.binding
+      @template.concat "</ol></fieldset></li>"
     end
 
     def submit(value="Save Changes", options={})
       @template.content_tag(:fieldset, super, :class => "button")
     end
 
-    def labelled_field(method, options, field_markup)
-      field_group(label(method, options) + field_markup)
+    def fieldgroup(options={}, &block)
+      @already_grouping = true
+      @template.concat @template.tag(:li, nil, true)
+      yield
+      @template.concat "</li>"
+      @already_grouping = false
     end
 
-    def field_group(options={})
-      @template.content_tag(:li, markup, options)
+    def labelled_field(method, options, markup)
+      if @already_grouping
+        label(method, options) + markup
+      else
+        list_item do
+          label(method, options) + markup
+        end
+      end
     end
 
     private
+
+    def list_item(options={}, &block)
+      @template.content_tag(:li, yield, options)
+    end
 
     def label(method, options={})
       text = options.delete(:label) || method.to_s.titleize
       text += ":" unless options.delete(:no_colon)
 
       ActionView::Helpers::InstanceTag.new(
-        object_name, method, self, nil, options.delete(:object)
+        object_name, method, self, options.delete(:object)
       ).to_label_tag(text)
     end
 
