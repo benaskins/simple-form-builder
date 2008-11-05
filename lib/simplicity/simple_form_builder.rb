@@ -49,7 +49,7 @@ module Simplicity
     end
 
     def radio_button(method, tag_value, options={})
-      field_group(super + radio_label(method, tag_value, options))
+      list_item(super + radio_label(method, tag_value, options))
     end
 
     def select(method, choices, options={}, html_options={})
@@ -82,6 +82,26 @@ module Simplicity
       @template.concat "</ol></fieldset>"
     end
 
+    def buttons(&block)
+      @template.concat @template.tag(:fieldset, nil, true)
+      @template.concat @template.tag(:ol, nil, true)
+
+      yield
+
+      @template.concat "</ol></fieldset>"
+    end
+
+    def button(options={})
+      prefix = @object.new_record? ? "Create" : "Save"
+      label = "#{prefix} #{@object_name.humanize}"
+      list_item(
+        @template.content_tag(:button, 
+          @template.content_tag(:img, nil, :src => options[:img], :alt => label) + label, 
+          :type => "submit"
+        )
+      )
+    end
+    
     def inner_fieldset(legend=nil, &block)
       @template.concat @template.tag(:li, nil, true)
       @template.concat @template.tag(:fieldset, nil, true)
@@ -99,7 +119,7 @@ module Simplicity
 
     def fieldgroup(options={}, &block)
       @already_grouping = true
-      @template.concat @template.tag(:li, nil, true)
+      @template.concat @template.tag(:li, options, true)
       yield
       @template.concat "</li>"
       @already_grouping = false
@@ -107,27 +127,25 @@ module Simplicity
 
     def labelled_field(method, options, markup)
       if @already_grouping
-        label(method, options) + markup
+        markup + label(method, options)
       else
-        list_item do
-          label(method, options) + markup
-        end
+        list_item(label(method, options) + markup)
       end
     end
 
     private
 
-    def list_item(options={}, &block)
-      @template.content_tag(:li, yield, options)
+    def list_item(markup, options={})
+      @template.content_tag(:li, markup, options)
     end
 
     def label(method, options={})
-      text = options.delete(:label) || method.to_s.titleize
+      text = options.delete(:label) || (@already_grouping ? method.to_s.titleize.upcase : method.to_s.titleize)
       text += ":" unless options.delete(:no_colon)
-
+      dom_class = options.delete(:label_class) || method
       ActionView::Helpers::InstanceTag.new(
         object_name, method, self, options.delete(:object)
-      ).to_label_tag(text)
+      ).to_label_tag(text, :class => dom_class)
     end
 
     def radio_label(method, value, options={})
