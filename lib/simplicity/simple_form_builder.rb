@@ -100,13 +100,9 @@ module Simplicity
 
     def button(options={})
       prefix = @object.new_record? ? "Create" : "Save"
-      label = "#{prefix} #{options[:label] || @object_name.humanize}"
-      list_item(
-        @template.content_tag(:button, 
-          @template.content_tag(:img, nil, :src => options[:img], :alt => label) + label, 
-          :type => "submit"
-        )
-      )
+      label = options[:label] || "#{prefix @object_name.humanize}"
+      button_content = options[:img] ? @template.content_tag(:img, nil, :src => options[:img], :alt => label) + label : label
+      list_item(@template.content_tag(:button, button_content, :type => "submit"))
     end
     
     def inner_fieldset(legend=nil, &block)
