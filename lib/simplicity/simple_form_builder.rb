@@ -99,7 +99,7 @@ module Simplicity
     end
 
     def button(options={})
-      prefix = @object.new_record? ? "Create" : "Save"
+      prefix = @object.respond_to?(:new_record?) && @object.new_record? ? "Create" : "Save"
       label = options[:label] || "#{prefix @object_name.humanize}"
       button_content = options[:img] ? @template.content_tag(:img, nil, :src => options[:img], :alt => label) + label : label
       list_item(@template.content_tag(:button, button_content, :type => "submit"))
