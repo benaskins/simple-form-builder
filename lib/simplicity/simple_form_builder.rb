@@ -81,7 +81,7 @@ module Simplicity
     end
 
     def fieldset(options={}, &block)
-      @template.concat @template.tag(:fieldset, options.merge(:class => "set"), true)
+      @template.concat @template.tag(:fieldset, options, true)
       @template.concat @template.tag(:ol, nil, true)
 
       yield
