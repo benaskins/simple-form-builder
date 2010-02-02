@@ -102,7 +102,7 @@ module Simplicity
       prefix = @object.respond_to?(:new_record?) && @object.new_record? ? "Create" : "Save"
       label = options.delete(:label) || "#{prefix @object_name.humanize}"
       button_content = options.delete(:img) ? @template.content_tag(:img, nil, :src => button_content, :alt => label) + label : label
-      list_item(@template.content_tag(:button, button_content, options.merge(:type => "submit")))
+      list_item(@template.content_tag(:button, button_content, options.merge(:type => "submit")), :class => "button")
     end
     
     def inner_fieldset(legend=nil, &block)
