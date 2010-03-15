@@ -147,6 +147,11 @@ module Simplicity
         list_item(markup + label(method, options))
       end
     end
+    
+    def simple_fields_for(record_or_name_or_array, *args, &proc)
+      options = args.extract_options!
+      fields_for(record_or_name_or_array, *(args << options.merge(:builder => SimpleFormBuilder)), &proc)
+    end  
 
     private
 
