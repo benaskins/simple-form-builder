@@ -18,7 +18,7 @@ module Simplicity
   end
 
   class SimpleFormBuilder < ActionView::Helpers::FormBuilder
-
+    
     def initialize(*args)
       @tab_index = 0
       super
@@ -45,7 +45,9 @@ module Simplicity
     end
 
     def check_box(method, options={}, checked_value="1", unchecked_value="0")
-      list_item(super + label(method, options.merge(:no_colon => true)), :class => "checkbox")
+      li_options = { :class => "checkbox" }
+      li_options[:wrapper_el] = options.delete(:wrapper_el) if options.has_key?(:wrapper_el)
+      list_item(super + label(method, options.merge(:no_colon => true)), li_options)
     end
 
     def radio_button(method, tag_value, options={})
@@ -147,7 +149,8 @@ module Simplicity
     private
 
     def list_item(markup, options={})
-      @template.content_tag(:li, markup, options)
+      el = options.has_key?(:wrapper_el) ? options.delete(:wrapper_el).to_sym : :li
+      @template.content_tag(el, markup, options)
     end
 
     def label(method, options={})
