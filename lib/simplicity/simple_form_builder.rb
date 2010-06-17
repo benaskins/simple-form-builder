@@ -51,7 +51,9 @@ module Simplicity
     end
 
     def radio_button(method, tag_value, options={})
-      super + radio_label(method, tag_value, options)
+      label_text = options.has_key?(:label_text) ? options.delete(:label_text) : tag_value
+      options[:input_val] = tag_value
+      super + radio_label(method, label_text, options)
     end
 
     def select(method, choices, options={}, html_options={})
@@ -163,9 +165,10 @@ module Simplicity
     end
 
     def radio_label(method, value, options={})
+      for_val = options.has_key?(:input_val) ? options.delete(:input_val) : value
       @template.content_tag :label,
         value.humanize,
-        options.merge(:for => radio_button_id(method, value, options))
+        options.merge(:for => radio_button_id(method, for_val, options))
     end
 
     def radio_button_id(method, value, options)
