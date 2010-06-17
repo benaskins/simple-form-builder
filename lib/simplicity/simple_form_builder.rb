@@ -14,11 +14,11 @@ module Simplicity
     def simple_fields_for(record_or_name_or_array, *args, &proc)
       options = args.extract_options!
       fields_for(record_or_name_or_array, *(args << options.merge(:builder => SimpleFormBuilder)), &proc)
-    end    
+    end
   end
 
   class SimpleFormBuilder < ActionView::Helpers::FormBuilder
-    
+
     def initialize(*args)
       @tab_index = 0
       super
@@ -51,7 +51,7 @@ module Simplicity
     end
 
     def radio_button(method, tag_value, options={})
-      label_text = options.has_key?(:label_text) ? options.delete(:label_text) : tag_value
+      label_text = options.delete(:label_text) || tag_value
       options[:input_val] = tag_value
       super + radio_label(method, label_text, options)
     end
@@ -156,7 +156,7 @@ module Simplicity
     private
 
     def list_item(markup, options={})
-      el = options.has_key?(:wrapper_el) ? options.delete(:wrapper_el).to_sym : :li
+      el = options.delete(:wrapper_el).try(:to_sym) || :li
       @template.content_tag(el, markup, options)
     end
 
@@ -170,7 +170,7 @@ module Simplicity
     end
 
     def radio_label(method, value, options={})
-      for_val = options.has_key?(:input_val) ? options.delete(:input_val) : value
+      for_val = options.delete(:input_val) || value
       @template.content_tag :label,
         value.humanize,
         options.merge(:for => radio_button_id(method, for_val, options))
